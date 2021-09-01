@@ -6,13 +6,11 @@ import com.raidiam.techtask.accountapi.model.Transaction;
 import com.raidiam.techtask.accountapi.model.http.AccountListResponse;
 import com.raidiam.techtask.accountapi.model.http.TransactionListResponse;
 import com.raidiam.techtask.accountapi.util.AccountDataFactory;
-import com.raidiam.techtask.accountapi.util.Exceptions;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
