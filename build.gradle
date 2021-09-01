@@ -1,0 +1,107 @@
+import org.gradle.api.JavaVersion
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.external.javadoc.JavadocMemberLevel
+
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '2.3.3.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'java'
+    id 'application'
+    id 'maven-publish'
+}
+
+ext {
+    jupiterVersion = "5.6.2"
+    mockitoVersion = "3.0.0"
+    lombokVersion = "1.18.12"
+    jsonWebTokenVersion = "0.11.2"
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+
+}
+
+dependencies {
+
+
+    implementation group: "io.jsonwebtoken", name: "jjwt-api", version: "${jsonWebTokenVersion}"
+    implementation group: "io.jsonwebtoken", name: "jjwt-impl", version: "${jsonWebTokenVersion}"
+    implementation group: "io.jsonwebtoken", name: "jjwt-jackson", version: "${jsonWebTokenVersion}"
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    implementation "com.google.guava:guava:26.0-jre"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:${jupiterVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+application {
+    mainClass = 'com.raidiam.techtask.accountapi.AccountApiApplication'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    withJavadocJar()
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+javadoc {
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        afterSuite { desc, result -> this.logTestResult(desc, result) }
+    }
+    exclude '**/*TestSuite.class'
+    exclude '**/*ITest.class'
+    exclude '**/*ITests.class'
+    exclude '**/*IntegrationTest.class'
+    exclude '**/*IntegrationTests.class'
+}
+
+bootRun {
+    if (project.hasProperty('profiles')) {
+        environment SPRING_PROFILES_ACTIVE: profiles
+    } else {
+        environment SPRING_PROFILES_ACTIVE: 'local'
+    }
+}
+
+def logTestResult(desc, result) {
+    if (!desc.parent) {
+        println "Results: ${result.resultType} -->  ${result.testCount} tests (${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+    }
+}
